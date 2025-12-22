@@ -868,11 +868,13 @@ class ClusteringVisualizer:
                     plt.show()
                     plt.close(fig)
 
-
-# Функции для удобного использования
+# Обновленная функция визуализации
 def visualize_clustering_result(result: Dict[str, Any],
                                plot_type: str = 'all',
                                save_path: Optional[str] = None,
+                               show_filenames: bool = True,
+                               filename_limit: int = None,
+                               highlight_files: List[str] = None,
                                **kwargs) -> None:
     """
     Универсальная функция для визуализации результатов кластеризации
@@ -880,22 +882,50 @@ def visualize_clustering_result(result: Dict[str, Any],
     Args:
         result: Результаты кластеризации
         plot_type: Тип визуализации ('2d', 'membership', 'silhouette', 
-                   'distribution', 'gk_ellipses', 'all')
+                   'distribution', 'gk_ellipses', 'all', 'interactive', 'table')
         save_path: Путь для сохранения графиков
+        show_filenames: Показывать имена файлов на 2D графике
+        filename_limit: Максимальное количество имен файлов для отображения
+        highlight_files: Список файлов для выделения на графике
         **kwargs: Дополнительные параметры для визуализатора
     """
     visualizer = ClusteringVisualizer(**kwargs)
     
     if plot_type == 'all':
+        # Создаем график с именами файлов отдельно
+        if show_filenames:
+            fig = visualizer.plot_clusters_2d(result, 
+                                            reduction_method='pca',
+                                            show_filenames=True,
+                                            filename_limit=filename_limit,
+                                            highlight_files=highlight_files)
+            if save_path:
+                fig.savefig(f"{save_path}_with_filenames.png", 
+                          dpi=300, bbox_inches='tight')
+                print(f"График с именами файлов сохранен: {save_path}_with_filenames.png")
+            else:
+                plt.show()
+                plt.close(fig)
+        
+        # Создаем остальные графики без имен файлов
         visualizer.create_comprehensive_report(result, save_path)
+        
     else:
         fig = None
         plot_type = plot_type.lower()
         
         if plot_type in ['2d', '2d_pca']:
-            fig = visualizer.plot_clusters_2d(result, reduction_method='pca')
+            fig = visualizer.plot_clusters_2d(result, 
+                                            reduction_method='pca',
+                                            show_filenames=show_filenames,
+                                            filename_limit=filename_limit,
+                                            highlight_files=highlight_files)
         elif plot_type == '2d_tsne':
-            fig = visualizer.plot_clusters_2d(result, reduction_method='tsne')
+            fig = visualizer.plot_clusters_2d(result, 
+                                            reduction_method='tsne',
+                                            show_filenames=show_filenames,
+                                            filename_limit=filename_limit,
+                                            highlight_files=highlight_files)
         elif plot_type in ['membership', 'fuzzy']:
             fig = visualizer.plot_membership_matrix(result)
         elif plot_type in ['silhouette', 'silhouette_analysis']:
@@ -904,11 +934,11 @@ def visualize_clustering_result(result: Dict[str, Any],
             fig = visualizer.plot_cluster_size_distribution(result)
         elif plot_type in ['gk', 'ellipses', 'gustafson_kessel']:
             fig = visualizer.plot_gk_clusters_with_ellipses(result)
-        elif plot_type == 'table':
-            fig = visualizer.plot_cluster_with_file_table(result)
         elif plot_type == 'interactive':
             visualizer.plot_interactive_clusters(result, save_path=save_path)
             return
+        elif plot_type == 'table':
+            fig = visualizer.plot_cluster_with_file_table(result)
         else:
             raise ValueError(f"Неизвестный тип визуализации: {plot_type}")
         
@@ -919,6 +949,60 @@ def visualize_clustering_result(result: Dict[str, Any],
                 plt.close(fig)
             else:
                 plt.show()
+
+# # Функции для удобного использования
+# def visualize_clustering_result(result: Dict[str, Any],
+#                                plot_type: str = 'all',
+#                                save_path: Optional[str] = None,
+#                                show_filenames: bool = True,
+#                                filename_limit: int = None,
+#                                highlight_files: List[str] = None,
+#                                **kwargs) -> None:
+#     """
+#     Универсальная функция для визуализации результатов кластеризации
+    
+#     Args:
+#         result: Результаты кластеризации
+#         plot_type: Тип визуализации ('2d', 'membership', 'silhouette', 
+#                    'distribution', 'gk_ellipses', 'all')
+#         save_path: Путь для сохранения графиков
+#         **kwargs: Дополнительные параметры для визуализатора
+#     """
+#     visualizer = ClusteringVisualizer(**kwargs)
+    
+#     if plot_type == 'all':
+#         visualizer.create_comprehensive_report(result, save_path)
+#     else:
+#         fig = None
+#         plot_type = plot_type.lower()
+        
+#         if plot_type in ['2d', '2d_pca']:
+#             fig = visualizer.plot_clusters_2d(result, reduction_method='pca')
+#         elif plot_type == '2d_tsne':
+#             fig = visualizer.plot_clusters_2d(result, reduction_method='tsne')
+#         elif plot_type in ['membership', 'fuzzy']:
+#             fig = visualizer.plot_membership_matrix(result)
+#         elif plot_type in ['silhouette', 'silhouette_analysis']:
+#             fig = visualizer.plot_silhouette_analysis(result)
+#         elif plot_type in ['distribution', 'cluster_sizes']:
+#             fig = visualizer.plot_cluster_size_distribution(result)
+#         elif plot_type in ['gk', 'ellipses', 'gustafson_kessel']:
+#             fig = visualizer.plot_gk_clusters_with_ellipses(result)
+#         elif plot_type == 'table':
+#             fig = visualizer.plot_cluster_with_file_table(result)
+#         elif plot_type == 'interactive':
+#             visualizer.plot_interactive_clusters(result, save_path=save_path)
+#             return
+#         else:
+#             raise ValueError(f"Неизвестный тип визуализации: {plot_type}")
+        
+#         if fig:
+#             if save_path:
+#                 fig.savefig(save_path, dpi=300, bbox_inches='tight')
+#                 print(f"График сохранен: {save_path}")
+#                 plt.close(fig)
+#             else:
+#                 plt.show()
 
 
 def compare_clustering_methods(results_list: List[Dict[str, Any]],
