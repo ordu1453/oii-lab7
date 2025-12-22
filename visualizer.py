@@ -950,7 +950,6 @@ def visualize_clustering_result(result: Dict[str, Any],
             else:
                 plt.show()
 
-# # Функции для удобного использования
 # def visualize_clustering_result(result: Dict[str, Any],
 #                                plot_type: str = 'all',
 #                                save_path: Optional[str] = None,
