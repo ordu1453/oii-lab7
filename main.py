@@ -37,7 +37,7 @@ def main():
 
     # Нечеткая кластеризация C-means
     print("Кластеризация методом Fuzzy C-means:")
-    result_fcm = cluster.cluster_files(vectors_lemmatized, method='fcm', n_clusters=7, m=2.0)
+    result_fcm = cluster.cluster_files(vectors_lemmatized, method='fcm', n_clusters=7, m=0.50)
     print(f"Метод: {result_fcm['method']}")
     print(f"Количество кластеров: {result_fcm['n_clusters']}")
     print(f"Silhouette Score: {result_fcm['silhouette_score']:.3f}")
@@ -54,9 +54,19 @@ def main():
     # print(f"Метки кластеров: {result_gk['labels']}")
     # print()
 
-    visualizer.visualize_clustering_result(result_kmeans, plot_type='2d_pca')
-    visualizer.visualize_clustering_result(result_kmeans, plot_type='distribution')
-
+    visualizer.visualize_clustering_result(result_kmeans, plot_type='2d_pca',
+                              show_filenames=True,
+                              filename_limit=None)
+    visualizer.visualize_clustering_result(result_fcm, plot_type='2d_pca',
+                              show_filenames=True,
+                              filename_limit=None
+                              )
+    # visualizer.visualize_clustering_result(result_gk, plot_type='2d_pca',
+    #                           show_filenames=True,
+    #                           filename_limit=None
+    #                           )
+    
+    
 
 
 if __name__ == "__main__":

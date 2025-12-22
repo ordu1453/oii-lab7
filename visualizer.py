@@ -6,8 +6,9 @@ import seaborn as sns
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 import numpy as np
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Tuple
 import warnings
+from matplotlib import font_manager
 
 class ClusteringVisualizer:
     def __init__(self, figsize=(15, 10)):
@@ -44,17 +45,33 @@ class ClusteringVisualizer:
     def plot_clusters_2d(self, result: Dict[str, Any], 
                         reduction_method: str = 'pca',
                         show_centers: bool = True,
-                        show_labels: bool = False,
+                        show_filenames: bool = True,
+                        filename_limit: int = None,
+                        filename_fontsize: int = 8,
+                        filename_alpha: float = 0.7,
+                        filename_offset: Tuple[float, float] = (5, 5),
+                        highlight_files: List[str] = None,
+                        highlight_color: str = 'red',
+                        highlight_size: int = 150,
+                        show_cluster_labels: bool = True,
                         alpha: float = 0.7,
                         figsize: Optional[tuple] = None) -> plt.Figure:
         """
-        Визуализация кластеров в 2D пространстве
+        Визуализация кластеров в 2D пространстве с именами файлов
         
         Args:
             result: Результаты кластеризации
             reduction_method: Метод уменьшения размерности ('pca', 'tsne')
             show_centers: Показывать центры кластеров
-            show_labels: Показывать метки точек
+            show_filenames: Показывать имена файлов
+            filename_limit: Максимальное количество файлов для отображения (None = все)
+            filename_fontsize: Размер шрифта для имен файлов
+            filename_alpha: Прозрачность текста файлов
+            filename_offset: Смещение текста от точки (dx, dy)
+            highlight_files: Список файлов для выделения
+            highlight_color: Цвет выделенных файлов
+            highlight_size: Размер точек выделенных файлов
+            show_cluster_labels: Показывать метки кластеров на центрах
             alpha: Прозрачность точек
             figsize: Размер фигуры
             
@@ -69,6 +86,14 @@ class ClusteringVisualizer:
         n_clusters = result['n_clusters']
         method_name = result['method']
         
+        # Получаем имена файлов
+        if 'filenames' in result:
+            filenames = result['filenames']
+        elif 'file_clusters' in result:
+            filenames = list(result['file_clusters'].keys())
+        else:
+            filenames = [f'Объект_{i}' for i in range(len(vectors))]
+        
         # Уменьшение размерности
         vectors_2d = self._reduce_dimensions(vectors, 2, reduction_method)
         
@@ -77,10 +102,80 @@ class ClusteringVisualizer:
         # Создание цветовой карты
         cmap = cm.get_cmap('tab10', n_clusters)
         
-        # Отрисовка точек
-        scatter = ax.scatter(vectors_2d[:, 0], vectors_2d[:, 1],
-                           c=labels, cmap=cmap, alpha=alpha, s=100,
-                           edgecolors='white', linewidth=1)
+        # Определяем, какие файлы выделять
+        highlight_indices = []
+        if highlight_files:
+            highlight_indices = [i for i, fname in enumerate(filenames) 
+                               if fname in highlight_files]
+        
+        # Отрисовка обычных точек (не выделенных)
+        if highlight_indices:
+            # Создаем маску для невыделенных точек
+            mask = np.ones(len(vectors), dtype=bool)
+            mask[highlight_indices] = False
+            
+            if np.any(mask):
+                scatter = ax.scatter(vectors_2d[mask, 0], vectors_2d[mask, 1],
+                                   c=labels[mask], cmap=cmap, alpha=alpha, s=100,
+                                   edgecolors='white', linewidth=1, zorder=1)
+        
+        # Отрисовка выделенных точек
+        if highlight_indices:
+            highlight_labels = [labels[i] for i in highlight_indices]
+            ax.scatter(vectors_2d[highlight_indices, 0], 
+                      vectors_2d[highlight_indices, 1],
+                      c=highlight_color, alpha=1.0, s=highlight_size,
+                      edgecolors='black', linewidth=2, 
+                      marker='*', zorder=3,
+                      label='Выделенные файлы')
+        
+        # Если нет выделенных точек, рисуем все точки обычным способом
+        if not highlight_indices:
+            scatter = ax.scatter(vectors_2d[:, 0], vectors_2d[:, 1],
+                               c=labels, cmap=cmap, alpha=alpha, s=100,
+                               edgecolors='white', linewidth=1, zorder=1)
+        
+        # Отрисовка имен файлов
+        if show_filenames:
+            # Определяем, сколько файлов показывать
+            if filename_limit and filename_limit < len(filenames):
+                indices_to_label = np.random.choice(len(filenames), 
+                                                   filename_limit, 
+                                                   replace=False)
+            else:
+                indices_to_label = range(len(filenames))
+            
+            # Добавляем выделенные файлы в список для отображения имен
+            if highlight_indices:
+                indices_to_label = list(indices_to_label) + highlight_indices
+                indices_to_label = list(set(indices_to_label))  # Убираем дубликаты
+            
+            for i in indices_to_label:
+                x, y = vectors_2d[i]
+                filename = filenames[i]
+                
+                # Настройка цвета текста для выделенных файлов
+                text_color = 'black'
+                text_weight = 'normal'
+                text_alpha = filename_alpha
+                
+                if i in highlight_indices:
+                    text_color = highlight_color
+                    text_weight = 'bold'
+                    text_alpha = 1.0
+                
+                ax.annotate(filename, xy=(x, y), 
+                          xytext=filename_offset,
+                          textcoords='offset points',
+                          fontsize=filename_fontsize,
+                          fontweight=text_weight,
+                          color=text_color,
+                          alpha=text_alpha,
+                          bbox=dict(boxstyle='round,pad=0.2',
+                                  facecolor='white',
+                                  alpha=0.7,
+                                  edgecolor='none'),
+                          zorder=2)
         
         # Отрисовка центров кластеров
         if show_centers and 'centers' in result:
@@ -94,46 +189,245 @@ class ClusteringVisualizer:
                 centers_2d = np.array([np.mean(vectors_2d[labels == i], axis=0) 
                                       for i in range(n_clusters)])
             
-            ax.scatter(centers_2d[:, 0], centers_2d[:, 1],
-                      c=range(n_clusters), cmap=cmap, s=300,
-                      marker='X', edgecolors='black', linewidth=2,
-                      label='Центры кластеров')
+            center_scatter = ax.scatter(centers_2d[:, 0], centers_2d[:, 1],
+                                      c=range(n_clusters), cmap=cmap, s=300,
+                                      marker='X', edgecolors='black', linewidth=2,
+                                      label='Центры кластеров', zorder=4)
             
             # Добавление номеров центров
-            for i, center in enumerate(centers_2d):
-                ax.annotate(f'C{i}', xy=center, xytext=(5, 5),
-                          textcoords='offset points', fontsize=12,
-                          fontweight='bold', color='black')
-        
-        # Добавление меток точек
-        if show_labels and 'filenames' in result:
-            filenames = result['filenames']
-            for i, (x, y) in enumerate(vectors_2d):
-                ax.annotate(filenames[i], xy=(x, y), xytext=(5, 5),
-                          textcoords='offset points', fontsize=8,
-                          alpha=0.7)
+            if show_cluster_labels:
+                for i, center in enumerate(centers_2d):
+                    ax.annotate(f'Кластер {i}', xy=center, 
+                              xytext=(10, 10),
+                              textcoords='offset points', 
+                              fontsize=11,
+                              fontweight='bold',
+                              color='black',
+                              bbox=dict(boxstyle='round,pad=0.3',
+                                      facecolor='yellow',
+                                      alpha=0.7))
         
         # Настройка графика
-        ax.set_xlabel(f'Компонента 1 ({reduction_method.upper()})', fontsize=12)
-        ax.set_ylabel(f'Компонента 2 ({reduction_method.upper()})', fontsize=12)
-        ax.set_title(f'Кластеризация методом {method_name}\n'
-                    f'Кластеров: {n_clusters}, '
-                    f'Silhouette Score: {result.get("silhouette_score", 0):.3f}',
-                    fontsize=14, fontweight='bold')
+        reduction_name = 'PCA' if reduction_method == 'pca' else 't-SNE'
+        ax.set_xlabel(f'Компонента 1 ({reduction_name})', fontsize=12)
+        ax.set_ylabel(f'Компонента 2 ({reduction_name})', fontsize=12)
         
-        # Добавление легенды
-        legend_elements = []
-        for i in range(n_clusters):
-            color = cmap(i)
-            legend_elements.append(plt.Line2D([0], [0], marker='o', color='w',
-                                            markerfacecolor=color,
-                                            markersize=10, label=f'Кластер {i}'))
-        ax.legend(handles=legend_elements, loc='best')
+        title = f'Кластеризация методом {method_name}\n'
+        title += f'Кластеров: {n_clusters}, '
+        title += f'Объектов: {len(vectors)}'
+        
+        if 'silhouette_score' in result:
+            title += f', Silhouette Score: {result["silhouette_score"]:.3f}'
+            
+        if show_filenames and filename_limit:
+            title += f'\nПоказано имен файлов: {filename_limit} из {len(filenames)}'
+        
+        ax.set_title(title, fontsize=14, fontweight='bold')
+        
+        # Добавление легенды для кластеров
+        if not highlight_indices or len(set(labels)) > 1:
+            legend_elements = []
+            for i in range(n_clusters):
+                color = cmap(i)
+                legend_elements.append(
+                    plt.Line2D([0], [0], marker='o', color='w',
+                             markerfacecolor=color,
+                             markersize=10, 
+                             label=f'Кластер {i} ({np.sum(labels == i)} объектов)')
+                )
+            
+            # Добавляем элементы легенды для выделенных файлов, если они есть
+            if highlight_indices:
+                legend_elements.append(
+                    plt.Line2D([0], [0], marker='*', color='w',
+                             markerfacecolor=highlight_color,
+                             markersize=12,
+                             markeredgecolor='black',
+                             markeredgewidth=1,
+                             label=f'Выделенные файлы ({len(highlight_indices)})')
+                )
+            
+            ax.legend(handles=legend_elements, loc='best', 
+                     fontsize=10, framealpha=0.9)
         
         ax.grid(True, alpha=0.3)
-        plt.tight_layout()
         
+        # Добавляем информацию о распределении по кластерам
+        if n_clusters > 0 and n_clusters <= 10:
+            cluster_info = "\nРаспределение по кластерам:\n"
+            for i in range(n_clusters):
+                count = np.sum(labels == i)
+                percentage = count / len(labels) * 100
+                cluster_info += f"Кластер {i}: {count} объектов ({percentage:.1f}%)\n"
+            
+            # Убираем последний перенос строки
+            cluster_info = cluster_info.strip()
+            
+            # Добавляем текст на график
+            plt.figtext(0.02, 0.02, cluster_info, 
+                       fontsize=9, 
+                       bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5),
+                       verticalalignment='bottom')
+        
+        plt.tight_layout()
         return fig
+    
+    def plot_interactive_clusters(self, result: Dict[str, Any],
+                                 reduction_method: str = 'pca',
+                                 save_path: Optional[str] = None) -> None:
+        """
+        Создание интерактивной визуализации с отображением имен файлов при наведении
+        
+        Args:
+            result: Результаты кластеризации
+            reduction_method: Метод уменьшения размерности
+            save_path: Путь для сохранения HTML файла
+        """
+        try:
+            import plotly.graph_objects as go
+            import plotly.express as px
+            
+            vectors = result['vectors']
+            labels = result['labels']
+            
+            # Получаем имена файлов
+            if 'filenames' in result:
+                filenames = result['filenames']
+            elif 'file_clusters' in result:
+                filenames = list(result['file_clusters'].keys())
+            else:
+                filenames = [f'Объект_{i}' for i in range(len(vectors))]
+            
+            # Уменьшение размерности
+            vectors_2d = self._reduce_dimensions(vectors, 2, reduction_method)
+            
+            # Создаем DataFrame для Plotly
+            import pandas as pd
+            df = pd.DataFrame({
+                'x': vectors_2d[:, 0],
+                'y': vectors_2d[:, 1],
+                'Кластер': labels,
+                'Файл': filenames,
+                'Размер_кластера': [np.sum(labels == label) for label in labels]
+            })
+            
+            # Создаем интерактивный график
+            fig = px.scatter(df, x='x', y='y', 
+                           color='Кластер',
+                           hover_name='Файл',
+                           hover_data=['Кластер', 'Размер_кластера'],
+                           title=f'Интерактивная визуализация кластеризации ({result["method"]})',
+                           labels={'x': f'Компонента 1 ({reduction_method.upper()})',
+                                  'y': f'Компонента 2 ({reduction_method.upper()})'},
+                           template='plotly_white')
+            
+            # Настраиваем отображение
+            fig.update_traces(marker=dict(size=10, line=dict(width=1, color='white')),
+                            selector=dict(mode='markers'))
+            
+            if save_path:
+                fig.write_html(save_path)
+                print(f"Интерактивная визуализация сохранена: {save_path}")
+            
+            fig.show()
+            
+        except ImportError:
+            print("Для интерактивной визуализации установите plotly:")
+            print("pip install plotly")
+            
+            # Создаем статическую визуализацию вместо интерактивной
+            self.plot_clusters_2d(result, reduction_method=reduction_method, 
+                                show_filenames=True, filename_limit=20)
+    
+    def plot_cluster_with_file_table(self, result: Dict[str, Any],
+                                    reduction_method: str = 'pca',
+                                    max_files_per_cluster: int = 10,
+                                    figsize: Optional[tuple] = None) -> plt.Figure:
+        """
+        Визуализация кластеров с таблицей файлов
+        
+        Args:
+            result: Результаты кластеризации
+            reduction_method: Метод уменьшения размерности
+            max_files_per_cluster: Максимальное количество файлов для отображения в таблице
+            figsize: Размер фигуры
+            
+        Returns:
+            Объект matplotlib Figure
+        """
+        if figsize is None:
+            figsize = (18, 12)
+        
+        # Создаем основной график
+        fig = self.plot_clusters_2d(result, reduction_method=reduction_method,
+                                  show_filenames=False, show_centers=True,
+                                  figsize=(12, 8))
+        
+        # Создаем новую фигуру с двумя областями
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=figsize, 
+                                      gridspec_kw={'width_ratios': [2, 1]})
+        
+        vectors = result['vectors']
+        labels = result['labels']
+        n_clusters = result['n_clusters']
+        
+        # Получаем имена файлов
+        if 'filenames' in result:
+            filenames = result['filenames']
+        elif 'file_clusters' in result:
+            filenames = list(result['file_clusters'].keys())
+        else:
+            filenames = [f'Объект_{i}' for i in range(len(vectors))]
+        
+        # Уменьшение размерности
+        vectors_2d = self._reduce_dimensions(vectors, 2, reduction_method)
+        
+        # График кластеров на левой панели
+        cmap = cm.get_cmap('tab10', n_clusters)
+        scatter = ax1.scatter(vectors_2d[:, 0], vectors_2d[:, 1],
+                            c=labels, cmap=cmap, alpha=0.7, s=100,
+                            edgecolors='white', linewidth=1)
+        
+        # Настройка левой панели
+        reduction_name = 'PCA' if reduction_method == 'pca' else 't-SNE'
+        ax1.set_xlabel(f'Компонента 1 ({reduction_name})', fontsize=12)
+        ax1.set_ylabel(f'Компонента 2 ({reduction_name})', fontsize=12)
+        ax1.set_title(f'Визуализация кластеров\n{result["method"]}', 
+                     fontsize=14, fontweight='bold')
+        ax1.grid(True, alpha=0.3)
+        
+        # Таблица файлов на правой панели
+        ax2.axis('off')
+        ax2.set_title('Файлы по кластерам', fontsize=14, fontweight='bold', 
+                     pad=20, loc='left')
+        
+        # Создаем текст с файлами по кластерам
+        table_text = ""
+        
+        for cluster_id in range(n_clusters):
+            cluster_indices = np.where(labels == cluster_id)[0]
+            cluster_files = [filenames[i] for i in cluster_indices]
+            
+            table_text += f"\n{'='*50}\n"
+            table_text += f"Кластер {cluster_id}: {len(cluster_files)} файлов\n"
+            table_text += f"{'='*50}\n"
+            
+            # Ограничиваем количество отображаемых файлов
+            files_to_show = cluster_files[:max_files_per_cluster]
+            for i, filename in enumerate(files_to_show, 1):
+                table_text += f"{i:2d}. {filename}\n"
+            
+            if len(cluster_files) > max_files_per_cluster:
+                table_text += f"... и еще {len(cluster_files) - max_files_per_cluster} файлов\n"
+        
+        # Отображаем текст
+        ax2.text(0, 1, table_text, fontfamily='monospace', fontsize=9,
+                verticalalignment='top', transform=ax2.transAxes,
+                bbox=dict(boxstyle='round', facecolor='lightgray', alpha=0.8))
+        
+        plt.tight_layout()
+        return fig
+
     
     def plot_membership_matrix(self, result: Dict[str, Any],
                               figsize: Optional[tuple] = None) -> plt.Figure:
@@ -610,6 +904,11 @@ def visualize_clustering_result(result: Dict[str, Any],
             fig = visualizer.plot_cluster_size_distribution(result)
         elif plot_type in ['gk', 'ellipses', 'gustafson_kessel']:
             fig = visualizer.plot_gk_clusters_with_ellipses(result)
+        elif plot_type == 'table':
+            fig = visualizer.plot_cluster_with_file_table(result)
+        elif plot_type == 'interactive':
+            visualizer.plot_interactive_clusters(result, save_path=save_path)
+            return
         else:
             raise ValueError(f"Неизвестный тип визуализации: {plot_type}")
         
