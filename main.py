@@ -45,14 +45,14 @@ def main():
     print(f"Метки кластеров: {result_fcm['labels']}")
     print()
 
-    # # Кластеризация методом Гат-Гевы
-    # print("Кластеризация методом Gustafson-Kessel:")
-    # result_gk = cluster.cluster_files(vectors_lemmatized, method='gk', n_clusters=7, m=2.0)
-    # print(f"Метод: {result_gk['method']}")
-    # print(f"Количество кластеров: {result_gk['n_clusters']}")
-    # print(f"Silhouette Score: {result_gk['silhouette_score']:.3f}")
-    # print(f"Метки кластеров: {result_gk['labels']}")
-    # print()
+    # Кластеризация методом Гат-Гевы
+    print("Кластеризация методом Gustafson-Kessel:")
+    result_gk = cluster.cluster_files(vectors_lemmatized, method='gk', n_clusters=7, m=2.0)
+    print(f"Метод: {result_gk['method']}")
+    print(f"Количество кластеров: {result_gk['n_clusters']}")
+    print(f"Silhouette Score: {result_gk['silhouette_score']:.3f}")
+    print(f"Метки кластеров: {result_gk['labels']}")
+    print()
 
     visualizer.visualize_clustering_result(result_kmeans, plot_type='2d_pca',
                               show_filenames=True,
@@ -61,6 +61,7 @@ def main():
                               show_filenames=True,
                               filename_limit=None
                               )
+    visualizer.visualize_clustering_result(result_gk, plot_type='gk')
     # visualizer.visualize_clustering_result(result_fcm, plot_type='silhouette'
     #                           )
     # visualizer.visualize_clustering_result(result_gk, plot_type='2d_pca',
