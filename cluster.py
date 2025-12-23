@@ -10,19 +10,8 @@ class VectorClustering:
         self.models = {}
         
     def k_means_clustering(self, vectors: np.ndarray, n_clusters: int = 3, 
-                           random_state: int = 42, n_init: int = 10) -> Dict[str, Any]:
-        """
-        Кластеризация методом K-средних
-        
-        Args:
-            vectors: Массив векторов для кластеризации
-            n_clusters: Количество кластеров
-            random_state: Семя для воспроизводимости
-            n_init: Количество инициализаций
-            
-        Returns:
-            Словарь с результатами кластеризации
-        """
+                           random_state: int = 10, n_init: int = 10) -> Dict[str, Any]:
+
         if len(vectors) < n_clusters:
             n_clusters = max(2, len(vectors) // 2)
             

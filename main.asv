@@ -1,20 +1,31 @@
+%% Простой FCM кластеризатор для документов
 clear; close all; clc;
 
+% 1. Загрузка данных из JSON файла
 fprintf('Загрузка данных из JSON файла...\n');
 
+% Запрашиваем у пользователя имя файла
 filename = input('Введите имя JSON файла (например: documents.json): ', 's');
 if isempty(filename)
-    filename = 'vectors_lemmatized.json'; % файл по умолчанию
+    filename = 'vectors_lemma.json'; % файл по умолчанию
 end
 
+% Проверяем существование файла
+if ~exist(filename, 'file')
+    error('Файл %s не найден!', filename);
+end
+
+% Читаем JSON файл
 json_text = fileread(filename);
 data_struct = jsondecode(json_text);
 
+% Извлекаем названия документов и векторы
 doc_names = fieldnames(data_struct);
 num_docs = length(doc_names);
 
 fprintf('Загружено %d документов\n', num_docs);
 
+% Создаем матрицу векторов
 vectors = [];
 for i = 1:num_docs
     doc_name = doc_names{i};
@@ -29,71 +40,40 @@ for i = 1:num_docs
 end
 fprintf('Размерность векторов: %d\n', vector_length);
 
+% 2. Запрашиваем число кластеров у пользователя
 k = input('Введите число кластеров: ');
 if isempty(k) || k < 2 || k > num_docs
     k = min(3, floor(num_docs/2));
     fprintf('Используем %d кластеров по умолчанию\n', k);
 end
 
-
-fprintf('\nВыполняем PCA для уменьшения размерности...\n');
-
-% Определение количества компонент (например, сохраняем 95% дисперсии)
-desiredVariance = 0.95;
-[coeff, score, latent, ~, explained] = pca(vectors);
-
-% Находим количество компонент, объясняющих desiredVariance дисперсии
-cumulativeVariance = cumsum(explained);
-kComponents = find(cumulativeVariance >= desiredVariance * 100, 1);
-
-fprintf('Количество главных компонент для сохранения %.1f%% дисперсии: %d\n', ...
-    desiredVariance * 100, kComponents);
-
-% Альтернативно: фиксированное количество компонент
-% kComponents = min(50, size(vectors, 2)); % например, максимум 50 компонент
-
-% Применяем PCA
-vectors_pca = score(:, 1:kComponents);
-
-fprintf('Размерность данных до PCA: %d\n', size(vectors, 2));
-fprintf('Размерность данных после PCA: %d\n', kComponents);
-
-% 2. Выполняем FCM кластеризацию на данных после PCA
-fprintf('\nВыполняем FCM кластеризацию на данных после PCA...\n');
-
-options = fcmOptions(...
-    NumClusters=k, ...
-    DistanceMetric="euclidean", ...
-    Exponent=11, ...
-    Verbose=true);
-
-[centers_pca, U, ~] = fcm(vectors_pca, options);
+% 3. Выполняем FCM кластеризацию
+fprintf('\nВыполняем FCM кластеризацию...\n');
+options = fcmOptions(NumClusters=k);
+[centers, U, ~] = fcm(vectors, options);
 
 % Присваиваем документы к кластерам
 [~, cluster_idx] = max(U);
 
-% % 3. Выполняем FCM кластеризацию
-% fprintf('\nВыполняем FCM кластеризацию...\n');
-% options = fcmOptions(NumClusters=k, DistanceMetric = "euclidean", Exponent = 10, Verbose = true);
-% [centers, U, ~] = fcm(vectors, options);
-
-
-
+% 4. Выводим результаты
 fprintf('\n=== РЕЗУЛЬТАТЫ КЛАСТЕРИЗАЦИИ ===\n');
 fprintf('Всего кластеров: %d\n', k);
 fprintf('Всего документов: %d\n\n', num_docs);
 
+% Показываем размеры кластеров
 for i = 1:k
     cluster_size = sum(cluster_idx == i);
     fprintf('Кластер %d: %d документов (%.1f%%)\n', ...
         i, cluster_size, cluster_size/num_docs*100);
 end
 
+% 5. Показываем документы по кластерам
 fprintf('\nДокументы по кластерам:\n');
 for i = 1:k
     fprintf('\n--- Кластер %d ---\n', i);
     idx = find(cluster_idx == i);
     
+    % Показываем не более 20 документов на кластер
     num_to_show = min(20, length(idx));
     for j = 1:num_to_show
         fprintf('%s\n', doc_names{idx(j)});
@@ -104,6 +84,7 @@ for i = 1:k
     end
 end
 
+% 6. Простая визуализация (если данные 2D или 3D)
 if vector_length == 2
     figure(1);
     colors = lines(k);
@@ -135,6 +116,7 @@ elseif vector_length == 3
     hold off;
     
 else
+    % Для многомерных данных используем PCA для визуализации
     fprintf('\nДля визуализации применяем PCA (данные %d-мерные)\n', vector_length);
     [~, score] = pca(vectors);
     
@@ -152,19 +134,24 @@ else
     hold off;
 end
 
+% 7. Сохраняем результаты в простом формате
 fprintf('\nСохраняем результаты...\n');
 
+% Создаем простую таблицу
 results_table = table();
 results_table.Document = doc_names;
 results_table.Cluster = cluster_idx';
 
+% Добавляем степени принадлежности
 for i = 1:k
     results_table.(sprintf('Prob_Cluster_%d', i)) = U(i,:)';
 end
 
-% writetable(results_table, 'clustering_results.csv');
-% fprintf('Результаты сохранены в clustering_results.csv\n');
+% Сохраняем в CSV
+writetable(results_table, 'clustering_results.csv');
+fprintf('Результаты сохранены в clustering_results.csv\n');
 
+% Сохраняем краткий отчет
 fid = fopen('clustering_report.txt', 'w');
 fprintf(fid, 'Отчет по кластеризации документов\n');
 fprintf(fid, '==================================\n');

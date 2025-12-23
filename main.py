@@ -3,13 +3,12 @@ import vectorization
 import numpy as np
 import cluster
 import visualizer
-import gg
 
-import numpy as np
-import multiprocessing
-from mst_clustering.clustering_models import ZahnModel, GathGevaModel
-from sklearn.datasets import make_blobs
-from mst_clustering import Pipeline
+# import numpy as np
+# import multiprocessing
+# from mst_clustering.clustering_models import ZahnModel, GathGevaModel
+# from sklearn.datasets import make_blobs
+# from mst_clustering import Pipeline
 
     # Преобразование в матрицу
 def dict_to_matrix(data_dict):
@@ -23,7 +22,7 @@ def dict_to_matrix(data_dict):
     return X, filenames
 
 def main():
-    multiprocessing.freeze_support()
+    # multiprocessing.freeze_support()
 
     folder_path = "тексты/"
     results = parser.process_folder_simple(folder_path, "результаты.txt")
@@ -54,6 +53,8 @@ def main():
     print(f"Silhouette Score: {result_kmeans['silhouette_score']:.3f}")
     print(f"Метки кластеров: {result_kmeans['labels']}")
     print()
+
+    # print(result_kmeans)
 
     # Нечеткая кластеризация C-means
     print("Кластеризация методом Fuzzy C-means:")
@@ -103,27 +104,27 @@ def main():
     #                           filename_limit=None
     #                           )
     
-        # Использование
-    X, filenames = dict_to_matrix(vectors_lemmatized)
-    print("Матрица признаков:")
-    print(X)
-    print("\nСоответствие индексов файлам:")
-    for i, name in enumerate(filenames):
-        print(f"Индекс {i}: {name}")
+    #     # Использование
+    # X, filenames = dict_to_matrix(vectors_lemmatized)
+    # print("Матрица признаков:")
+    # print(X)
+    # print("\nСоответствие индексов файлам:")
+    # for i, name in enumerate(filenames):
+    #     print(f"Индекс {i}: {name}")
 
-    clustering = Pipeline(clustering_models=[
-        ZahnModel(3, 1.5, 1e-4, max_num_of_clusters=7),GathGevaModel(0.0001, 2)
-    ])
-    # Теперь можно передать X в функцию кластеризации
-    clustering.fit(data=X, workers_count=4)
+    # clustering = Pipeline(clustering_models=[
+    #     ZahnModel(3, 1.5, 1e-4, max_num_of_clusters=7),GathGevaModel(0.0001, 2)
+    # ])
+    # # Теперь можно передать X в функцию кластеризации
+    # clustering.fit(data=X, workers_count=4)
 
-    labels = clustering.labels
-    partition = clustering.partition
-    clusters_count = clustering.clusters_count
+    # labels = clustering.labels
+    # partition = clustering.partition
+    # clusters_count = clustering.clusters_count
 
-    print(labels)
-    print(partition)
-    print(clusters_count)
+    # print(labels)
+    # print(partition)
+    # print(clusters_count)
     
 
 if __name__ == "__main__":
