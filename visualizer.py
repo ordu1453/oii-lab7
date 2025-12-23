@@ -208,9 +208,9 @@ class ClusteringVisualizer:
                                       alpha=0.7))
         
         # Настройка графика
-        reduction_name = 'PCA' if reduction_method == 'pca' else 't-SNE'
-        ax.set_xlabel(f'Компонента 1 ({reduction_name})', fontsize=12)
-        ax.set_ylabel(f'Компонента 2 ({reduction_name})', fontsize=12)
+        # reduction_name = 'PCA' if reduction_method == 'pca' else 't-SNE'
+        # ax.set_xlabel(f'Компонента 1 ({reduction_name})', fontsize=12)
+        # ax.set_ylabel(f'Компонента 2 ({reduction_name})', fontsize=12)
         
         title = f'Кластеризация методом {method_name}\n'
         title += f'Кластеров: {n_clusters}, '
@@ -222,7 +222,7 @@ class ClusteringVisualizer:
         if show_filenames and filename_limit:
             title += f'\nПоказано имен файлов: {filename_limit} из {len(filenames)}'
         
-        ax.set_title(title, fontsize=14, fontweight='bold')
+        # ax.set_title(title, fontsize=14, fontweight='bold')
         
         # Добавление легенды для кластеров
         if not highlight_indices or len(set(labels)) > 1:
@@ -264,10 +264,10 @@ class ClusteringVisualizer:
             cluster_info = cluster_info.strip()
             
             # Добавляем текст на график
-            plt.figtext(0.02, 0.02, cluster_info, 
-                       fontsize=9, 
-                       bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5),
-                       verticalalignment='bottom')
+            # plt.figtext(0.02, 0.02, cluster_info, 
+            #            fontsize=9, 
+            #            bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.5),
+            #            verticalalignment='bottom')
         
         plt.tight_layout()
         return fig

@@ -48,7 +48,7 @@ def main():
         print(f"  Ненулевые элементы: {np.sum(vector > 0)}")
 
     # Кластеризация методом K-means
-    result_kmeans = cluster.cluster_files(vectors_lemmatized, method='kmeans', n_clusters=7)
+    result_kmeans = cluster.cluster_files(vectors_wordforms, method='kmeans', n_clusters=10)
     print(f"Метод: {result_kmeans['method']}")
     print(f"Количество кластеров: {result_kmeans['n_clusters']}")
     print(f"Silhouette Score: {result_kmeans['silhouette_score']:.3f}")
@@ -59,7 +59,7 @@ def main():
 
     # Нечеткая кластеризация C-means
     print("Кластеризация методом Fuzzy C-means:")
-    result_fcm = cluster.cluster_files(vectors_lemmatized, method='fcm', n_clusters=3, m=45)
+    result_fcm = cluster.cluster_files(vectors_wordforms, method='fcm', n_clusters=10, m=45)
     print(f"Метод: {result_fcm['method']}")
     print(f"Количество кластеров: {result_fcm['n_clusters']}")
     print(f"Silhouette Score: {result_fcm['silhouette_score']:.3f}")
@@ -76,9 +76,9 @@ def main():
     # print(f"Метки кластеров: {result_gk['labels']}")
     # print()
 
-    visualizer.visualize_clustering_result(result_kmeans, plot_type='2d_pca',
-                              show_filenames=True,
-                              filename_limit=None)
+    # visualizer.visualize_clustering_result(result_kmeans, plot_type='2d_pca',
+    #                           show_filenames=True,
+    #                           filename_limit=None)
     visualizer.visualize_clustering_result(result_fcm, plot_type='2d_pca',
                               show_filenames=True,
                               filename_limit=None
