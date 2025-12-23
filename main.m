@@ -1,11 +1,6 @@
 clear; close all; clc;
 
-fprintf('Загрузка данных из JSON файла...\n');
-
-filename = input('Введите имя JSON файла (например: documents.json): ', 's');
-if isempty(filename)
-    filename = 'vectors_lemmatized.json'; % файл по умолчанию
-end
+filename = 'vectors_lemmatized.json'; % файл по умолчанию
 
 json_text = fileread(filename);
 data_struct = jsondecode(json_text);
@@ -35,9 +30,6 @@ if isempty(k) || k < 2 || k > num_docs
     fprintf('Используем %d кластеров по умолчанию\n', k);
 end
 
-
-fprintf('\nВыполняем PCA для уменьшения размерности...\n');
-
 % Определение количества компонент (например, сохраняем 95% дисперсии)
 desiredVariance = 0.95;
 [coeff, score, latent, ~, explained] = pca(vectors);
@@ -63,8 +55,8 @@ fprintf('\nВыполняем FCM кластеризацию на данных �
 
 options = fcmOptions(...
     NumClusters=k, ...
-    DistanceMetric="euclidean", ...
-    Exponent=11, ...
+    DistanceMetric="fmle", ...
+    Exponent=2, ...
     Verbose=true);
 
 [centers_pca, U, ~] = fcm(vectors_pca, options);

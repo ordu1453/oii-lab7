@@ -3,6 +3,7 @@ import vectorization
 import numpy as np
 import cluster
 import visualizer
+import dist
 
 # import numpy as np
 # import multiprocessing
@@ -58,7 +59,7 @@ def main():
 
     # Нечеткая кластеризация C-means
     print("Кластеризация методом Fuzzy C-means:")
-    result_fcm = cluster.cluster_files(vectors_lemmatized, method='fcm', n_clusters=7, m=45)
+    result_fcm = cluster.cluster_files(vectors_lemmatized, method='fcm', n_clusters=3, m=45)
     print(f"Метод: {result_fcm['method']}")
     print(f"Количество кластеров: {result_fcm['n_clusters']}")
     print(f"Silhouette Score: {result_fcm['silhouette_score']:.3f}")
@@ -82,6 +83,10 @@ def main():
                               show_filenames=True,
                               filename_limit=None
                               )
+    
+    avg_inter, avg_intra = dist.calculate_cluster_distances(vectors_lemmatized, result_kmeans, metric='euclidean')
+    avg_inter, avg_intra = dist.calculate_cluster_distances(vectors_lemmatized, result_fcm, metric='euclidean')
+
     # visualizer.visualize_clustering_result(result_gk, plot_type='gk')
     # # visualizer.visualize_clustering_result(result_fcm, plot_type='silhouette'
     # #                           )

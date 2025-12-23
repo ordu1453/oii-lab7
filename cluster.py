@@ -18,7 +18,6 @@ class VectorClustering:
         kmeans = KMeans(n_clusters=n_clusters, random_state=random_state, n_init=n_init)
         labels = kmeans.fit_predict(vectors)
         
-        # Вычисляем метрики качества
         if len(np.unique(labels)) > 1:
             try:
                 silhouette = silhouette_score(vectors, labels)
@@ -39,55 +38,35 @@ class VectorClustering:
     def fuzzy_c_means_clustering(self, vectors: np.ndarray, n_clusters: int = 3,
                                 m: float = 2.0, max_iter: int = 100, 
                                 error: float = 1e-5, random_state: int = 42) -> Dict[str, Any]:
-        """
-        Кластеризация методом Fuzzy C-means
-        
-        Args:
-            vectors: Массив векторов для кластеризации
-            n_clusters: Количество кластеров
-            m: Параметр нечеткости (m > 1)
-            max_iter: Максимальное количество итераций
-            error: Критерий остановки
-            
-        Returns:
-            Словарь с результатами кластеризации
-        """
         if len(vectors) < n_clusters:
             n_clusters = max(2, len(vectors) // 2)
             
         np.random.seed(random_state)
         n_samples, n_features = vectors.shape
         
-        # Инициализация матрицы принадлежности
         U = np.random.rand(n_samples, n_clusters)
         U = U / np.sum(U, axis=1, keepdims=True)
         
         for iteration in range(max_iter):
             U_old = U.copy()
             
-            # Вычисление центров кластеров
             centers = np.zeros((n_clusters, n_features))
             for j in range(n_clusters):
                 numerator = np.sum((U[:, j] ** m)[:, np.newaxis] * vectors, axis=0)
                 denominator = np.sum(U[:, j] ** m)
                 centers[j] = numerator / denominator
             
-            # Вычисление расстояний
             distances = cdist(vectors, centers, metric='euclidean')
             distances = np.fmax(distances, np.finfo(np.float64).eps)
             
-            # Обновление матрицы принадлежности
             temp = distances ** (-2/(m-1))
             U = temp / np.sum(temp, axis=1, keepdims=True)
             
-            # Проверка критерия остановки
             if np.linalg.norm(U - U_old) < error:
                 break
         
-        # Жесткая кластеризация для меток
         labels = np.argmax(U, axis=1)
         
-        # Вычисляем метрики качества
         if len(np.unique(labels)) > 1:
             try:
                 silhouette = silhouette_score(vectors, labels)

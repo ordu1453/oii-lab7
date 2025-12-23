@@ -1,57 +1,37 @@
 Отчет по кластеризации документов
 ==================================
-Дата: 23-Dec-2025 21:04:13
+Дата: 23-Dec-2025 22:04:08
 Файл данных: vectors_lemmatized.json
 Число документов: 50
-Число кластеров: 7
+Число кластеров: 3
 
-Кластер 1 (6 документов, 12.0%):
-  - sportivnaja_meditsina_02_odt
-  - sportivnaja_meditsina_03_txt
-  - sportivnaja_meditsina_04_html
-  - sportivnaja_meditsina_05_docx
-  - sportivnaja_meditsina_06_odt
-  - sportivnaja_meditsina_07_txt
-
-Кластер 2 (0 документов, 0.0%):
-
-Кластер 3 (25 документов, 50.0%):
-  - kommentatory_01_docx
-  - kommentatory_02_odt
-  - kommentatory_03_txt
-  - kommentatory_04_html
-  - kommentatory_05_docx
-  - kommentatory_06_odt
-  - kommentatory_07_txt
-  - neorganicheskaja_himija_01_docx
-  - neorganicheskaja_himija_02_odt
-  - neorganicheskaja_himija_03_txt
-  ... и еще 15 документов
-
-Кластер 4 (7 документов, 14.0%):
-  - anamnez_02_odt
-  - anamnez_03_txt
-  - anamnez_04_html
-  - anamnez_05_docx
-  - anamnez_06_odt
-  - anamnez_07_txt
-  - anamnez_08_html
-
-Кластер 5 (3 документов, 6.0%):
-  - stavki_02_odt
-  - stavki_03_txt
-  - stavki_04_html
-
-Кластер 6 (8 документов, 16.0%):
+Кластер 1 (34 документов, 68.0%):
   - anamnez_01_docx
+  - anamnez_02_odt
+  - anamnez_04_html
+  - anamnez_06_odt
+  - anamnez_08_html
   - biohimija_01_docx
-  - biohimija_02_odt
-  - biohimija_03_txt
   - biohimija_04_html
   - biohimija_05_docx
   - biohimija_06_odt
   - biohimija_07_txt
+  ... и еще 24 документов
 
-Кластер 7 (1 документов, 2.0%):
-  - sportivnaja_meditsina_01_docx
+Кластер 2 (14 документов, 28.0%):
+  - anamnez_03_txt
+  - anamnez_05_docx
+  - anamnez_07_txt
+  - biohimija_02_odt
+  - kommentatory_05_docx
+  - kommentatory_07_txt
+  - neorganicheskaja_himija_04_html
+  - neorganicheskaja_himija_05_docx
+  - organicheskaja_himija_06_odt
+  - organicheskaja_himija_07_txt
+  ... и еще 4 документов
+
+Кластер 3 (2 документов, 4.0%):
+  - biohimija_03_txt
+  - organicheskaja_himija_02_odt
 
