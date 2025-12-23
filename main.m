@@ -1,6 +1,6 @@
 clear; close all; clc;
 
-filename = 'vectors_lemmatized.json'; % файл по умолчанию
+filename = 'vectors_wordforms.json'; % файл по умолчанию
 
 json_text = fileread(filename);
 data_struct = jsondecode(json_text);
@@ -31,7 +31,7 @@ if isempty(k) || k < 2 || k > num_docs
 end
 
 % Определение количества компонент (например, сохраняем 95% дисперсии)
-desiredVariance = 0.95;
+desiredVariance = 0.10;
 [coeff, score, latent, ~, explained] = pca(vectors);
 
 % Находим количество компонент, объясняющих desiredVariance дисперсии
@@ -101,7 +101,8 @@ if vector_length == 2
     colors = lines(k);
     for i = 1:k
         idx = find(cluster_idx == i);
-        scatter(vectors(idx,1), vectors(idx,2), 50, colors(i,:), 'filled');
+        scatter(vectors(idx, ...
+            1), vectors(idx,2), 50, colors(i,:), 'filled');
         hold on;
     end
     plot(centers(:,1), centers(:,2), 'kx', 'MarkerSize', 15, 'LineWidth', 2);
@@ -139,7 +140,7 @@ else
     end
     xlabel('Первая главная компонента'); 
     ylabel('Вторая главная компонента');
-    title(sprintf('Кластеризация (PCA проекция, k=%d)', k));
+    % title(sprintf('Кластеризация (PCA проекция, k=%d)', k));
     grid on;
     hold off;
 end

@@ -1,34 +1,66 @@
 Отчет по кластеризации документов
 ==================================
-Дата: 24-Dec-2025 01:42:43
-Файл данных: vectors_lemmatized.json
+Дата: 24-Dec-2025 02:02:18
+Файл данных: vectors_wordforms.json
 Число документов: 50
 Число кластеров: 7
 
-Кластер 1 (48 документов, 96.0%):
+Кластер 1 (11 документов, 22.0%):
   - anamnez_01_docx
   - anamnez_02_odt
-  - anamnez_03_txt
   - anamnez_05_docx
-  - anamnez_06_odt
-  - anamnez_07_txt
   - anamnez_08_html
   - biohimija_01_docx
   - biohimija_02_odt
   - biohimija_03_txt
-  ... и еще 38 документов
+  - biohimija_04_html
+  - biohimija_05_docx
+  - biohimija_06_odt
+  ... и еще 1 документов
 
-Кластер 2 (2 документов, 4.0%):
-  - anamnez_04_html
-  - sportivnaja_meditsina_01_docx
+Кластер 2 (0 документов, 0.0%):
 
 Кластер 3 (0 документов, 0.0%):
 
-Кластер 4 (0 документов, 0.0%):
+Кластер 4 (16 документов, 32.0%):
+  - anamnez_03_txt
+  - anamnez_04_html
+  - anamnez_06_odt
+  - anamnez_07_txt
+  - kommentatory_07_txt
+  - organicheskaja_himija_02_odt
+  - organicheskaja_himija_03_txt
+  - organicheskaja_himija_04_html
+  - organicheskaja_himija_05_docx
+  - sportivnaja_meditsina_01_docx
+  ... и еще 6 документов
 
-Кластер 5 (0 документов, 0.0%):
+Кластер 5 (9 документов, 18.0%):
+  - kommentatory_01_docx
+  - kommentatory_02_odt
+  - kommentatory_03_txt
+  - kommentatory_04_html
+  - kommentatory_05_docx
+  - kommentatory_06_odt
+  - stavki_01_docx
+  - stavki_04_html
+  - stavki_05_docx
 
-Кластер 6 (0 документов, 0.0%):
+Кластер 6 (10 документов, 20.0%):
+  - neorganicheskaja_himija_01_docx
+  - neorganicheskaja_himija_02_odt
+  - neorganicheskaja_himija_03_txt
+  - neorganicheskaja_himija_04_html
+  - neorganicheskaja_himija_05_docx
+  - neorganicheskaja_himija_06_odt
+  - neorganicheskaja_himija_07_txt
+  - organicheskaja_himija_01_docx
+  - organicheskaja_himija_06_odt
+  - organicheskaja_himija_07_txt
 
-Кластер 7 (0 документов, 0.0%):
+Кластер 7 (4 документов, 8.0%):
+  - stavki_02_odt
+  - stavki_03_txt
+  - stavki_06_odt
+  - stavki_07_txt
 
