@@ -1,0 +1,41 @@
+Метод кластеризации: Gath-Geva
+Количество кластеров: 3
+Количество файлов: 50
+Итераций: 9
+
+Распределение файлов по кластерам:
+
+Кластер 0 (17 файлов):
+  file_001.txt
+  file_002.txt
+  file_008.txt
+  file_010.txt
+  file_013.txt
+  file_014.txt
+  file_017.txt
+  file_020.txt
+  file_022.txt
+  file_023.txt
+  ... и еще 7 файлов
+
+Кластер 1 (7 файлов):
+  file_005.txt
+  file_011.txt
+  file_021.txt
+  file_035.txt
+  file_038.txt
+  file_041.txt
+  file_047.txt
+
+Кластер 2 (26 файлов):
+  file_000.txt
+  file_003.txt
+  file_004.txt
+  file_006.txt
+  file_007.txt
+  file_009.txt
+  file_012.txt
+  file_015.txt
+  file_016.txt
+  file_018.txt
+  ... и еще 16 файлов
