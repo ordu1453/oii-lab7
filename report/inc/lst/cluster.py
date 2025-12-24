@@ -93,64 +93,43 @@ class VectorClustering:
     def gustafson_kessel_clustering(self, vectors: np.ndarray, n_clusters: int = 3,
                                    m: float = 2.0, max_iter: int = 100,
                                    error: float = 1e-5, random_state: int = 42) -> Dict[str, Any]:
-        """
-        Кластеризация методом Гюстафсона-Кесселя (Гат-Гевы)
-        
-        Args:
-            vectors: Массив векторов для кластеризации
-            n_clusters: Количество кластеров
-            m: Параметр нечеткости (m > 1)
-            max_iter: Максимальное количество итераций
-            error: Критерий остановки
-            
-        Returns:
-            Словарь с результатами кластеризации
-        """
         if len(vectors) < n_clusters:
             n_clusters = max(2, len(vectors) // 2)
             
         np.random.seed(random_state)
         n_samples, n_features = vectors.shape
         
-        # Инициализация матрицы принадлежности
         U = np.random.rand(n_samples, n_clusters)
         U = U / np.sum(U, axis=1, keepdims=True)
         
-        # Инициализация матриц ковариации
         cov_matrices = [np.eye(n_features) for _ in range(n_clusters)]
         
         for iteration in range(max_iter):
             U_old = U.copy()
             
-            # Вычисление центров кластеров
             centers = np.zeros((n_clusters, n_features))
             for j in range(n_clusters):
                 numerator = np.sum((U[:, j] ** m)[:, np.newaxis] * vectors, axis=0)
                 denominator = np.sum(U[:, j] ** m)
                 centers[j] = numerator / denominator
             
-            # Вычисление матриц ковариации и расстояний
             distances = np.zeros((n_samples, n_clusters))
             
             for j in range(n_clusters):
-                # Вычисление матрицы ковариации
                 diff = vectors - centers[j]
                 weighted_diff = (U[:, j] ** m)[:, np.newaxis] * diff
                 F_j = np.dot(weighted_diff.T, diff) / np.sum(U[:, j] ** m)
                 
-                # Добавление регуляризации для предотвращения вырожденности
+
                 F_j = F_j + np.eye(n_features) * 1e-6
                 
-                # Вычисление определителя и нормировка
-                rho = 1.0  # параметр объема
+                rho = 1.0  
                 det_F = np.linalg.det(F_j)
                 if det_F <= 0:
                     det_F = 1e-6
                 
-                # Нормализованная матрица ковариации
                 A_j = (rho * det_F) ** (1/n_features) * np.linalg.inv(F_j)
                 
-                # Вычисление расстояний Махалонобиса
                 diff = vectors - centers[j]
                 distances[:, j] = np.sum(np.dot(diff, A_j) * diff, axis=1)
                 
@@ -158,18 +137,14 @@ class VectorClustering:
             
             distances = np.fmax(distances, np.finfo(np.float64).eps)
             
-            # Обновление матрицы принадлежности
             temp = distances ** (-1/(m-1))
             U = temp / np.sum(temp, axis=1, keepdims=True)
             
-            # Проверка критерия остановки
             if np.linalg.norm(U - U_old) < error:
                 break
         
-        # Жесткая кластеризация для меток
         labels = np.argmax(U, axis=1)
         
-        # Вычисляем метрики качества
         if len(np.unique(labels)) > 1:
             try:
                 silhouette = silhouette_score(vectors, labels)
@@ -209,26 +184,21 @@ class VectorClustering:
         Returns:
             Словарь с результатами кластеризации и соответствием файлов кластерам
         """
-        # Проверка входных данных
         if not vectors_dict:
             raise ValueError("Словарь векторов не должен быть пустым")
         
-        # Извлечение векторов и имен файлов
         filenames = list(vectors_dict.keys())
         vectors = np.array(list(vectors_dict.values()))
         
-        # Проверка размерности векторов
         if vectors.ndim != 2:
             raise ValueError("Векторы должны быть двумерным массивом")
         
         if len(vectors) < 2:
             raise ValueError("Для кластеризации необходимо как минимум 2 вектора")
         
-        # Автоматический выбор количества кластеров, если не задано
         if n_clusters is None or n_clusters <= 0:
             n_clusters = min(5, max(2, len(vectors) // 3))
         
-        # Выбор метода кластеризации
         method = method.lower()
         
         with warnings.catch_warnings():
@@ -243,7 +213,6 @@ class VectorClustering:
             else:
                 raise ValueError(f"Неизвестный метод: {method}. Доступные методы: 'kmeans', 'fcm', 'gk'")
         
-        # Добавление соответствия файлов кластерам
         file_clusters = {filenames[i]: int(result['labels'][i]) 
                         for i in range(len(filenames))}
         
@@ -257,17 +226,7 @@ class VectorClustering:
     def find_optimal_clusters(self, vectors_dict: Dict[str, np.ndarray], 
                             method: str = 'kmeans', max_clusters: int = 10,
                             **kwargs) -> Dict[str, Any]:
-        """
-        Поиск оптимального количества кластеров
-        
-        Args:
-            vectors_dict: Словарь {filename: numpy.array}
-            method: Метод кластеризации
-            max_clusters: Максимальное количество кластеров для проверки
-            
-        Returns:
-            Результаты кластеризации с оптимальным количеством кластеров
-        """
+
         vectors = np.array(list(vectors_dict.values()))
         max_clusters = min(max_clusters, len(vectors) - 1)
         
@@ -288,7 +247,6 @@ class VectorClustering:
                 continue
         
         if best_result is None:
-            # Если не удалось найти оптимальное, используем 2 кластера
             best_result = self.cluster_vectors(vectors_dict, method, 2, **kwargs)
             best_n = 2
         
@@ -298,23 +256,10 @@ class VectorClustering:
         return best_result
 
 
-# Пример использования функции
 def cluster_files(vectors_dict: Dict[str, np.ndarray], 
                  method: str = 'kmeans', n_clusters: int = None,
                  find_optimal: bool = False, **kwargs) -> Dict[str, Any]:
-    """
-    Функция для кластеризации файлов по их векторным представлениям
-    
-    Args:
-        vectors_dict: Словарь {filename: numpy.array}
-        method: Метод кластеризации ('kmeans', 'fcm', 'gk')
-        n_clusters: Количество кластеров (None для автоматического выбора)
-        find_optimal: Найти оптимальное количество кластеров
-        **kwargs: Дополнительные параметры
-        
-    Returns:
-        Словарь с результатами кластеризации
-    """
+
     clusterer = VectorClustering()
     
     if find_optimal and n_clusters is None:
@@ -327,27 +272,21 @@ def cluster_files(vectors_dict: Dict[str, np.ndarray],
     return result
 
 
-# Пример использования
 if __name__ == "__main__":
-    # Создаем тестовые данные
     np.random.seed(42)
     n_files = 20
     vector_dim = 10
     
-    # Создаем словарь с векторами
     vectors_dict = {
         f'file_{i}.txt': np.random.randn(vector_dim) for i in range(n_files)
     }
     
-    # Добавляем структуру - создаем 3 группы
     for i in range(n_files):
         if i < 7:
             vectors_dict[f'file_{i}.txt'] += np.array([2, 2, 2] + [0] * (vector_dim - 3))
         elif i < 14:
             vectors_dict[f'file_{i}.txt'] += np.array([-2, -2, -2] + [0] * (vector_dim - 3))
-        # Третья группа остается с исходными значениями
     
-    # Пример 1: Кластеризация методом K-means
     print("Кластеризация методом K-means:")
     result_kmeans = cluster_files(vectors_dict, method='kmeans', n_clusters=3)
     print(f"Метод: {result_kmeans['method']}")
@@ -356,7 +295,6 @@ if __name__ == "__main__":
     print(f"Метки кластеров: {result_kmeans['labels']}")
     print()
     
-    # Пример 2: Нечеткая кластеризация C-means
     print("Кластеризация методом Fuzzy C-means:")
     result_fcm = cluster_files(vectors_dict, method='fcm', n_clusters=3, m=2.0)
     print(f"Метод: {result_fcm['method']}")
@@ -365,22 +303,6 @@ if __name__ == "__main__":
     print(f"Коэффициент разделения: {result_fcm['partition_coefficient']:.3f}")
     print()
     
-    # Пример 3: Кластеризация методом Гюстафсона-Кесселя
-    print("Кластеризация методом Gustafson-Kessel:")
-    result_gk = cluster_files(vectors_dict, method='gk', n_clusters=3, m=2.0)
-    print(f"Метод: {result_gk['method']}")
-    print(f"Количество кластеров: {result_gk['n_clusters']}")
-    print(f"Silhouette Score: {result_gk['silhouette_score']:.3f}")
-    print()
-    
-    # Пример 4: Поиск оптимального количества кластеров
-    print("Поиск оптимального количества кластеров (K-means):")
-    result_optimal = cluster_files(vectors_dict, method='kmeans', find_optimal=True, max_clusters=5)
-    print(f"Оптимальное количество кластеров: {result_optimal['optimal_n_clusters']}")
-    print(f"Лучший Silhouette Score: {result_optimal['best_silhouette_score']:.3f}")
-    print()
-    
-    # Пример 5: Показ распределения файлов по кластерам
     print("Распределение файлов по кластерам (K-means):")
     for filename, cluster in result_kmeans['file_clusters'].items():
         print(f"  {filename}: кластер {cluster}")

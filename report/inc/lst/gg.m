@@ -145,8 +145,6 @@ else
     hold off;
 end
 
-fprintf('\nСохраняем результаты...\n');
-
 results_table = table();
 results_table.Document = doc_names;
 results_table.Cluster = cluster_idx';
@@ -156,7 +154,6 @@ for i = 1:k
 end
 
 % writetable(results_table, 'clustering_results.csv');
-% fprintf('Результаты сохранены в clustering_results.csv\n');
 
 fid = fopen('clustering_report.txt', 'w');
 fprintf(fid, 'Отчет по кластеризации документов\n');
@@ -181,6 +178,3 @@ for i = 1:k
     fprintf(fid, '\n');
 end
 fclose(fid);
-fprintf('Отчет сохранен в clustering_report.txt\n');
-
-fprintf('\nГотово!\n');
