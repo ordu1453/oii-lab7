@@ -59,7 +59,7 @@ def main():
 
     # Нечеткая кластеризация C-means
     print("Кластеризация методом Fuzzy C-means:")
-    result_fcm = cluster.cluster_files(vectors_wordforms, method='fcm', n_clusters=10, m=45)
+    result_fcm = cluster.cluster_files(vectors_wordforms, method='fcm', n_clusters=7, m=10)
     print(f"Метод: {result_fcm['method']}")
     print(f"Количество кластеров: {result_fcm['n_clusters']}")
     print(f"Silhouette Score: {result_fcm['silhouette_score']:.3f}")
@@ -79,13 +79,22 @@ def main():
     # visualizer.visualize_clustering_result(result_kmeans, plot_type='2d_pca',
     #                           show_filenames=True,
     #                           filename_limit=None)
-    visualizer.visualize_clustering_result(result_fcm, plot_type='2d_pca',
-                              show_filenames=True,
-                              filename_limit=None
-                              )
+    # visualizer.visualize_clustering_result(result_fcm, plot_type='2d_pca',
+    #                           show_filenames=True,
+    #                           filename_limit=None
+    #                           )
     
     avg_inter, avg_intra = dist.calculate_cluster_distances(vectors_lemmatized, result_kmeans, metric='euclidean')
     avg_inter, avg_intra = dist.calculate_cluster_distances(vectors_lemmatized, result_fcm, metric='euclidean')
+
+    x = 2
+    while x<11:
+        result_kmeans = cluster.cluster_files(vectors_lemmatized, method='kmeans', n_clusters=x)
+        result_fcm = cluster.cluster_files(vectors_lemmatized, method='fcm', n_clusters=x, m=45)
+        print(f"====NUM CLUSTERS {x}====")
+        avg_inter, avg_intra = dist.calculate_cluster_distances(vectors_lemmatized, result_kmeans, metric='euclidean')
+        avg_inter, avg_intra = dist.calculate_cluster_distances(vectors_lemmatized, result_fcm, metric='euclidean')
+        x+=1
 
     # visualizer.visualize_clustering_result(result_gk, plot_type='gk')
     # # visualizer.visualize_clustering_result(result_fcm, plot_type='silhouette'
